@@ -33,6 +33,8 @@
 #include "math_functions.cuh"
 #include "types.hpp"
 
+#include <thrust/execution_policy.h>
+
 namespace minkowski {
 
 template <typename Dtype, typename Itype, typename ByteAllocator>
