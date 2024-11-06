@@ -175,23 +175,21 @@ std::vector<std::vector<int>> quantize_label(int const *const p_coords,
   for (int row = 0; row < nrows; ++row) {
     auto key = coordinate<coordinate_type>(p_coords + ncols * row);
     const auto it = map.find(key);
-    auto iter_success =
-        map.insert(value_type(key, mapped_type(n_unique, p_labels[row])));
-    if (iter_success.second) {
-      // success
+    if (it == map.end()) {
+      // New coordinate
+      map.insert(value_type(key, mapped_type(n_unique, p_labels[row])));
       mapping.push_back(row);
       colabels.push_back(p_labels[row]);
       inverse_mapping[row] = n_unique++;
     } else {
-      auto &keyval = *(iter_success.first);
-      auto &val = keyval.second;
-      // Set the label
-      if (val.second != p_labels[row] && val.second != invalid_label) {
-        // When the labels differ
+      // Existing coordinate
+      auto &val = it->second;
+      if (val.second != p_labels[row]) {
+        // Conflicting labels, set to invalid_label
         val.second = invalid_label;
-        colabels[inverse_mapping[val.first]] = invalid_label;
+        colabels[val.first] = invalid_label;
       }
-      inverse_mapping[row] = val.first; // row
+      inverse_mapping[row] = val.first;
     }
   }
 
