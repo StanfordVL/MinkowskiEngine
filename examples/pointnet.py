@@ -29,7 +29,7 @@ import glob
 
 try:
     import h5py
-except:
+except Exception:
     print("Install h5py with `pip install h5py`")
 import subprocess
 
