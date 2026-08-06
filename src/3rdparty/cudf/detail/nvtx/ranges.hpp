@@ -16,7 +16,15 @@
 
 #pragma once
 
+// The vendored nvtx3.hpp predates the NVTX v3 headers that CUDA >= 12 ships and
+// that PyTorch pulls in; having both declares two different inline versioning
+// namespaces inside `nvtx3`, making every name in it ambiguous. These ranges are
+// profiling annotations only, so build without them.
+#define MINKOWSKI_DISABLE_NVTX 1
+
+#ifndef MINKOWSKI_DISABLE_NVTX
 #include "nvtx3.hpp"
+#endif
 
 namespace cudf {
 /**
@@ -31,7 +39,9 @@ struct libcudf_domain {
  * @brief Alias for an NVTX range in the libcudf domain.
  *
  */
+#ifndef MINKOWSKI_DISABLE_NVTX
 using thread_range = ::nvtx3::domain_thread_range<libcudf_domain>;
+#endif
 
 }  // namespace cudf
 
@@ -51,4 +61,8 @@ using thread_range = ::nvtx3::domain_thread_range<libcudf_domain>;
  * ```
  *
  */
+#ifdef MINKOWSKI_DISABLE_NVTX
+#define CUDF_FUNC_RANGE() static_cast<void>(0)
+#else
 #define CUDF_FUNC_RANGE() NVTX3_FUNC_RANGE_IN(cudf::libcudf_domain)
+#endif

@@ -166,6 +166,19 @@ else:
 if not (CUDA_HOME is False):  # False when not set, str otherwise
     print(f"Using CUDA_HOME={CUDA_HOME}")
 
+if not CPU_ONLY:
+    # CUDA >= 13 relocated the bundled Thrust/CUB (CCCL) headers out of
+    # <cuda>/include into <cuda>/include/cccl, so they are no longer picked up
+    # implicitly by either nvcc or the host compiler.
+    from torch.utils.cpp_extension import CUDA_HOME as _TORCH_CUDA_HOME
+
+    _cuda_root = CUDA_HOME if CUDA_HOME else _TORCH_CUDA_HOME
+    if _cuda_root:
+        _cccl = os.path.join(_cuda_root, "include", "cccl")
+        if os.path.isdir(_cccl):
+            print(f"Using CCCL headers from {_cccl}")
+            include_dirs.append(_cccl)
+
 if sys.platform == "win32":
     vc_version = os.getenv("VCToolsVersion", "")
     if vc_version.startswith("14.16."):

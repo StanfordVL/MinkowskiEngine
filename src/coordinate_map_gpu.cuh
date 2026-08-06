@@ -136,9 +136,16 @@ public:
       LOG_DEBUG("Reserve map of",
                 compute_hash_table_size(size, m_hashtable_occupancy),
                 "for concurrent_unordered_map of size", size);
-      m_map = map_type::create(
+      // Assigning the unique_ptr to the shared_ptr directly makes libstdc++
+      // call an unqualified __to_address(); since map_type mentions
+      // cuda::std::pair (CCCL 3 / CUDA 13), ADL then also finds
+      // cuda::std::__to_address and the call is ambiguous. Building the
+      // shared_ptr from the released pointer avoids that overload entirely.
+      auto map_ptr = map_type::create(
           compute_hash_table_size(size, m_hashtable_occupancy),
           m_unused_element, m_unused_key, m_hasher, m_equal, m_map_allocator);
+      auto map_deleter = map_ptr.get_deleter();
+      m_map = std::shared_ptr<map_type>(map_ptr.release(), map_deleter);
       LOG_DEBUG("Done concurrent_unordered_map creation");
       CUDA_TRY(cudaStreamSynchronize(0));
       m_capacity = size;
