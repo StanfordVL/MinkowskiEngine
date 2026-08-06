@@ -25,6 +25,8 @@ import torch
 
 assert torch.__version__ >= "1.7.0", "Gradcheck requires pytorch 1.7 or higher"
 
+from inspect import signature
+
 from torch.types import _TensorOrTensors
 from typing import Callable, Union, Optional
 
@@ -43,15 +45,19 @@ def gradcheck(
     check_undefined_grad: bool = True,
     check_grad_dtypes: bool = False,
 ) -> bool:
-    return _gradcheck(
-        lambda *x: func.apply(*x),
-        inputs,
+    kwargs = dict(
         eps=eps,
         atol=atol,
         rtol=rtol,
         raise_exception=raise_exception,
-        check_sparse_nnz=check_sparse_nnz,
         nondet_tol=nondet_tol,
         check_undefined_grad=check_undefined_grad,
         check_grad_dtypes=check_grad_dtypes,
     )
+    # pytorch 2.0 dropped check_sparse_nnz in favor of the masked= argument.
+    if "check_sparse_nnz" in signature(_gradcheck).parameters:
+        kwargs["check_sparse_nnz"] = check_sparse_nnz
+    elif check_sparse_nnz and "masked" in signature(_gradcheck).parameters:
+        kwargs["masked"] = True
+
+    return _gradcheck(lambda *x: func.apply(*x), inputs, **kwargs)

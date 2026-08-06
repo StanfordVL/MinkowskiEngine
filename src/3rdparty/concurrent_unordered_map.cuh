@@ -27,6 +27,8 @@
 
 #include <thrust/pair.h>
 #include <thrust/count.h>
+// CCCL 3 (CUDA 13) dropped transitive includes; thrust::device needs this.
+#include <thrust/execution_policy.h>
 
 #include <functional>
 #include <memory>
@@ -585,8 +587,17 @@ class concurrent_unordered_map {
       if (cudaSuccess == status && isPtrManaged(hashtbl_values_ptr_attributes)) {
         int dev_id = 0;
         CUDA_TRY(cudaGetDevice(&dev_id));
+#if CUDART_VERSION >= 13000
+        // CUDA 13 replaced the device-ordinal overload with a cudaMemLocation.
+        cudaMemLocation loc{};
+        loc.type = cudaMemLocationTypeDevice;
+        loc.id   = dev_id;
+        CUDA_TRY(cudaMemPrefetchAsync(
+          m_hashtbl_values, m_capacity * sizeof(value_type), loc, 0, stream));
+#else
         CUDA_TRY(
           cudaMemPrefetchAsync(m_hashtbl_values, m_capacity * sizeof(value_type), dev_id, stream));
+#endif
       }
     }
 

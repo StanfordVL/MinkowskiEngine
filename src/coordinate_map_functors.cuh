@@ -107,9 +107,11 @@ struct insert_coordinate {
 };
 
 template <typename coordinate_type, typename map_type>
-struct find_coordinate
-    : public thrust::unary_function<uint32_t,
-                                    thrust::pair<uint32_t, uint32_t>> {
+struct find_coordinate {
+  // CCCL 3 (CUDA 13) removed thrust::unary_function; the base class only
+  // provided argument_type/result_type typedefs that are never used here.
+  using argument_type = uint32_t;
+  using result_type = thrust::pair<uint32_t, uint32_t>;
   using mapped_type = typename map_type::mapped_type;
   using return_type = thrust::pair<mapped_type, mapped_type>;
 

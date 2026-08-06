@@ -29,6 +29,14 @@
 
 #include <cusparse.h>
 
+// CCCL 3 (CUDA 13) dropped transitive includes.
+#include <thrust/execution_policy.h>
+#include <thrust/iterator/zip_iterator.h>
+#include <thrust/reduce.h>
+#include <thrust/sort.h>
+#include <thrust/system_error.h>
+#include <thrust/tuple.h>
+
 #include <ATen/core/Tensor.h>
 #include <ATen/cuda/CUDAContext.h>
 #include <ATen/cuda/CUDAUtils.h>

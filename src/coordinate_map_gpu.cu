@@ -35,7 +35,10 @@
 #include <thrust/execution_policy.h>
 #include <thrust/iterator/counting_iterator.h>
 #include <thrust/iterator/transform_iterator.h>
+// CCCL 3 (CUDA 13) dropped transitive includes; remove_if/unique need these.
+#include <thrust/remove.h>
 #include <thrust/sort.h>
+#include <thrust/unique.h>
 
 namespace minkowski {
 
