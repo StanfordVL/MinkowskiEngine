@@ -24,6 +24,7 @@
  * Networks", CVPR'19 (https://arxiv.org/abs/1904.08755) if you use any part
  * of the code.
  */
+#include <thrust/execution_policy.h>
 #include "coordinate_map_functors.cuh"
 #include "coordinate_map_gpu.cuh"
 #include "gpu.cuh"
@@ -36,6 +37,7 @@
 #include <thrust/iterator/counting_iterator.h>
 #include <thrust/iterator/transform_iterator.h>
 #include <thrust/sort.h>
+#include <thrust/unique.h>
 
 namespace minkowski {
 

@@ -24,6 +24,19 @@
  * Networks", CVPR'19 (https://arxiv.org/abs/1904.08755) if you use any part
  * of the code.
  */
+#include <thrust/execution_policy.h>
+#include <thrust/sort.h>
+#include <thrust/sequence.h>
+#include <thrust/reduce.h>
+#include <thrust/remove.h>
+#include <thrust/count.h>
+#include <thrust/copy.h>
+#include <thrust/fill.h>
+#include <thrust/device_vector.h>
+#include <thrust/host_vector.h>
+#include <thrust/iterator/zip_iterator.h>
+#include <thrust/tuple.h>
+#include <thrust/execution_policy.h>
 #include "gpu.cuh"
 #include "math_functions.cuh"
 

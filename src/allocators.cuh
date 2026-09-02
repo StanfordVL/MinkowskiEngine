@@ -45,6 +45,10 @@ namespace detail {
 
 template <class T> struct default_allocator {
   typedef T value_type;
+  typedef T *pointer;
+  typedef const T *const_pointer;
+  typedef std::size_t size_type;
+  typedef std::ptrdiff_t difference_type;
   // rmm::mr::device_memory_resource* mr = rmm::mr::get_default_resource();
 
   default_allocator() = default;
@@ -52,7 +56,11 @@ template <class T> struct default_allocator {
   template <class U>
   constexpr default_allocator(const default_allocator<U> &) noexcept {}
 
-  T *allocate(std::size_t n, cudaStream_t stream = 0) const {
+  template <class U> struct rebind {
+    typedef default_allocator<U> other;
+  };
+
+  pointer allocate(std::size_t n, cudaStream_t stream = 0) const {
     T *d_tmp;
     cudaError_t error = cudaMalloc((void **)&d_tmp, n * sizeof(T));
     if (error != cudaSuccess) {
@@ -69,15 +77,26 @@ template <class T> struct default_allocator {
     cudaFree(p);
     // mr->deallocate(p, n * sizeof(T), stream);
   }
+
+  friend bool operator==(const default_allocator &, const default_allocator &) { return true; }
+  friend bool operator!=(const default_allocator &, const default_allocator &) { return false; }
 };
 
 template <class T> struct c10_allocator {
   typedef T value_type;
+  typedef T *pointer;
+  typedef const T *const_pointer;
+  typedef std::size_t size_type;
+  typedef std::ptrdiff_t difference_type;
 
   c10_allocator() = default;
 
   template <class U>
   constexpr c10_allocator(const c10_allocator<U> &) noexcept {}
+
+  template <class U> struct rebind {
+    typedef c10_allocator<U> other;
+  };
 
   T *allocate(std::size_t n, cudaStream_t stream = 0) const {
     return reinterpret_cast<T *>(
@@ -100,6 +119,9 @@ template <class T> struct c10_allocator {
   void deallocate(T *p, std::size_t n, cudaStream_t stream = 0) const {
     c10::cuda::CUDACachingAllocator::raw_delete((void *)p);
   }
+
+  friend bool operator==(const c10_allocator &, const c10_allocator &) { return true; }
+  friend bool operator!=(const c10_allocator &, const c10_allocator &) { return false; }
 };
 
 template <typename T = char> class cached_allocator {
