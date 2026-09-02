@@ -27,6 +27,7 @@
 #ifndef GPU_POOLING_AVG
 #define GPU_POOLING_AVG
 
+#include <thrust/execution_policy.h>
 #include <cusparse.h>
 #include <limits>
 

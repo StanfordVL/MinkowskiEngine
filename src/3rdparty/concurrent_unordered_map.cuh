@@ -17,6 +17,19 @@
 #ifndef CONCURRENT_UNORDERED_MAP_CUH
 #define CONCURRENT_UNORDERED_MAP_CUH
 
+#include <thrust/execution_policy.h>
+#include <thrust/sort.h>
+#include <thrust/sequence.h>
+#include <thrust/reduce.h>
+#include <thrust/remove.h>
+#include <thrust/count.h>
+#include <thrust/copy.h>
+#include <thrust/fill.h>
+#include <thrust/device_vector.h>
+#include <thrust/host_vector.h>
+#include <thrust/iterator/zip_iterator.h>
+#include <thrust/tuple.h>
+#include <thrust/execution_policy.h>
 #include <cudf/detail/nvtx/ranges.hpp>
 #include <hash/hash_allocator.cuh>
 #include <hash/helper_functions.cuh>
@@ -184,7 +197,10 @@ class concurrent_unordered_map {
     // due to compiler bug: https://github.com/rapidsai/cudf/pull/5692
     auto deleter = [stream](Self* p) { (*p).destroy(stream); };
 
-    return std::unique_ptr<Self, std::function<void(Self*)>>{
+    // Return a shared_ptr directly (instead of unique_ptr) to avoid the
+    // unique_ptr->shared_ptr conversion, whose __to_address triggers a
+    // libstdc++ overload ambiguity under modern GCC/CCCL toolchains.
+    return std::shared_ptr<Self>{
       new Self(capacity, unused_element, unused_key, hash_function, equal, allocator, stream),
       deleter};
   }

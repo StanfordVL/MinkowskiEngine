@@ -25,6 +25,7 @@
 #ifndef GPU_POOLING_MAX_KERNEL
 #define GPU_POOLING_MAX_KERNEL
 
+#include <thrust/execution_policy.h>
 #include <limits>
 
 #include <thrust/execution_policy.h>
